@@ -135,3 +135,11 @@
 - Packaged verifier with earlier two decoders, JSON evidence and report in `DollarFix_T11_DelphiII_offline_validation_20261122.zip`, supplied privately to the user. No proprietary binaries included. Uploaded report is `DollarFix_T11_DelphiII_trace_gate_20261122.md`.
 - Repo technical summary: `reverse/docs/DELPHI2_DRIVER_BUFFER_GATE_20261122.md`. No binary patches or Android changes, no ECU/BT200 traffic, no odometer writes.
 - Next blocking evidence: saved normal-usage diagnostic log of the *selected* Delphi 2.4L branch and internal driver buffer (>=60 bytes) mapped from received frame. Do not assume raw KWP message offsets equal the C driver buffer offsets. Only then do offline replay/transport invariance check and plan reversible display-only change.
+
+## Iteration 2026-11-22: OldProEnter jump table decoded; offline-only candidate prepared
+
+- Verified OldProEnter takes selector as W0, copies to W20 (0xE4F40), and indexes signed offset jump table at RVA 0x2C2DF8 with W20-0xF101. Switch values F119 and F11A point to handlers E5C90/E5CEC, which call CheryDelphiII at E5CD0/E5D2C.
+- The encrypted GGP TEXT_RU label FD050101 is Delphi System 2.0L/2.4L(4G63/4G64), but **no proven runtime relation yet** between user UI label and F119/F11A native switch cases.
+- Implemented offline source verifier that checks ELF SHA256, 9 opcode positions, 2 jump-table entries, and conditionally extracts [56..59] from an already captured internal driver buffer; 6 tests pass. Synthetic 00 0F 42 40 at those offsets evaluates to 100000.0 km, NOT actual mileage.
+- Generated optional 19-entry **JSON-only dry run** preserving all original 18 stream IDs and appending 76010020; not a binary patch and NOT proven transport-invariant. Packaged verified Python scripts/report/JSON for user download.
+- GitHub document reverse/docs/DELPHI2_DRIVER_BUFFER_GATE_20261122.md updated. Next blocker: no actual normal-usage diagnostic trace or 60+ byte mapped internal driver buffer. Do not modify installed APK, native SO, GGP or ECU. Validate which menu code is chosen, and whether adding a display item changes on-wire traffic before preparing a reversible patch.
