@@ -16,8 +16,8 @@ TOKENS = [
     b"JNI_OnLoad", b"RegisterNatives", b"SearchIdOpenFile", b"DPU",
     b"QIRUI_TY", b"CHERY_OLD_RU.GGP", b"XDSDATA.GAG",
 ]
-CLASSES_RE = re.compile(r"^classes(?:[0-9]+)?\\.dex$")
-SO_RE = re.compile(r"^lib/[^/]+/[^/]+\\.so$")
+CLASSES_RE = re.compile(r"^classes(?:[0-9]+)?\.dex$")
+SO_RE = re.compile(r"^lib/[^/]+/[^/]+\.so$")
 
 def file_hash(path):
     h = hashlib.sha256()
