@@ -30,7 +30,7 @@ MAX_FILE_BYTES = 4 * 1024 * 1024
 def package_hint(filename: str) -> str:
     """These are filename-only hints, not verified subsystem classifications."""
     name = filename.replace("\\", "/").lower()
-    if "/elm/" in name or "/elmdata" in name or "/elm_" in name:
+    if any(token in name for token in ("/elm/", "/elm327/", "/elmdata", "/elm_")):
         return "ELM_NAMING_HINT"
     if any(k in name for k in ("/chery/", "/qirui", "/cnlaunch/", "/x431/")):
         return "OEM_OR_X431_NAMING_HINT"
