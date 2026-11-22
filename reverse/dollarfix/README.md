@@ -34,6 +34,26 @@ python reverse\dollarfix\tools\inventory_apk.py reverse\dollarfix\private\Dollar
 python reverse\dollarfix\tools\inspect_ggp.py reverse\dollarfix\private\QIRUI_FULL.zip -o reverse\dollarfix\output\ggp-structure.json
 ```
 
+### Alternative: obtain the installed app from your own Android device via REA
+
+If the historical APK cannot be retrieved, connect the phone by ADB, then on the **Windows REA/Codex workstation**:
+
+```powershell
+rea list-adb-devices
+rea pull-adb-package <device-serial> com.dnd.dollarfix.df51 --output-directory .\reverse\dollarfix\private\acquired
+```
+
+The pull is an acquisition of installed base and split APKs, not a patched installation. Use the returned actual paths and hashes; the APK currently installed on the phone may differ from the historical v1.3.0 sample. The `QIRUI_TY/V10.22` package still needs a local authorized backup, since installed base APK contents do not automatically include downloaded vehicle packs.
+
+For static REA checks once the true input is available:
+
+```powershell
+rea doctor --provider jadx --json
+rea inspect-android-package .\reverse\dollarfix\private\DollarFix.apk
+rea inspect-apk-signature .\reverse\dollarfix\private\DollarFix.apk
+rea decode-android-resources .\reverse\dollarfix\private\DollarFix.apk --locale ru
+```
+
 Then start local Codex with REA MCP configured; follow `CODEX_PROMPT.md`. Commit only analysis scripts, sanitized reports and independently written patch source. Do not commit the proprietary APK, GGP, license or keys.
 
 ### Critical limitation
