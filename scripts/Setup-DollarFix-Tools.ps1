@@ -83,7 +83,9 @@ if (-not $java -and -not ($javaHomeBin -and (Test-Path -LiteralPath $javaHomeBin
 else {
     $javaExecutable = if ($java) { $java.Source } else { $javaHomeBin }
     Write-Host "Java executable: $javaExecutable"
-    & $javaExecutable -version 2>&1 | Select-Object -First 3 | ForEach-Object { Write-Host $_ }
+    # java -version normally writes to stderr; do not convert it to a terminating PowerShell error.
+    & $javaExecutable -version
+    if ($LASTEXITCODE -ne 0) { Write-Warning "Java executable returned exit code $LASTEXITCODE" }
 }
 Write-Host "Prepared exact versions: JADX $jadxVersion; Apktool $apktoolVersion"
 Write-Host "Local tool root: $toolRoot"
