@@ -106,3 +106,13 @@
 - GGP readers are exposed via callback pointers like SearchIdOpenFile, fseekGGP, GetGAGOffsetFromGGP. Need libSEARCHID.so from saved arm64 split for actual GGP parsing.
 - Added reverse/docs/T11_GGP_ELF_ANALYSIS_20261122.md and a safe pinned parser extractor reverse/tools/extract_ggp_parser_libs.py plus synthetic tests. CI passed at https://github.com/koi2mkXSZ/Mucar-BT200-CC/actions/runs/45009546877.
 - Next: inspect libSEARCHID.so and libx431file.so; link GGP record decoding to the OEM Delphi menu and 76010020. Do not modify original APK, patch GGP blindly, or send ECU writes.
+
+## Iteration 2026-11-22: GGP search index completely decoded for target IDs
+
+- Received GGP-parser-evidence.zip containing libSEARCHID.so and libx431file.so, extracted from original SHA-pinned arm64 split. Verified both native library checksums (see reverse/docs/GGP_INDEX_DECODE_20261122.md).
+- Disassembled libSEARCHID.so: GGP files have a 1093-byte header with 15 encrypted 72-byte section entries. Reproduced Rijndael-256/256 section name decoding offline, validated all 15 names, and identified DSTREAM_RU.GAG and XDSDATA.GAG section ranges.
+- Decoded 5.03 LAH GAG record index: DSTREAM_RU.GAG has 15,771 entries; XDSDATA.GAG has 375 entries, each a four-byte key + four-byte transformed offset. ID 76010020 is **present already** in both sections.
+- Decoded data: 76010020 = 'Mile meter', 'Km' and equation F1=[56]1677721.6*[57]6553.6*+[58]25.6*+[59]0.1*+. Verified formula yields 100000 km for input 00 0F 42 40 interpreted as four driver-buffer bytes.
+- Exactly three earlier edited GGP bytes redirect ID 76010019 (EGR position) pointers to the already-existing 76010020 (Mile meter) payload; original keys/index rows are unchanged. This confirms what earlier experiment changed and explains why redirection could not add a new selectable OEM menu entry.
+- Generated read-only offline Python verification script and decoded JSON/Markdown reports. No APK/driver/ECU/phone changes.
+- Persisted report reverse/docs/GGP_INDEX_DECODE_20261122.md. Next: inspect OEM menu selection emitted by vehicle-specific driver and trace to Android DiagnoseUIDataBusiness.jsonUIDataStream and numeric selection mask; do not blindly edit existing GGP pointer fields.
