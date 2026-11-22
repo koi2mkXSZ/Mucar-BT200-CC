@@ -21,8 +21,8 @@ class ReverseToolsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             file = Path(d) / "dummy.apk"
             with zipfile.ZipFile(file, "w") as z:
-                z.writestr("classes.dex", b"dex\\n035\\x00some BluetoothGatt method")
-                z.writestr("lib/arm64-v8a/libdemo.so", b"\\x7fELFxxJNI_OnLoad")
+                z.writestr("classes.dex", b"dex\n035\x00some BluetoothGatt method")
+                z.writestr("lib/arm64-v8a/libdemo.so", b"\x7fELFxxJNI_OnLoad")
                 z.writestr("AndroidManifest.xml", b"abc")
             r = m.analyze(file)
             self.assertEqual(r["summary"]["dex_count"], 1)
@@ -35,10 +35,10 @@ class ReverseToolsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             file = Path(d) / "dummy.GGP"
             raw = bytearray(100)
-            raw[:4] = b"GGP\\x00"
+            raw[:4] = b"GGP\x00"
             raw[11] = 1
             struct.pack_into("<II", raw, 76, 84, 16)
-            raw[84:88] = b"LAH\\x00"
+            raw[84:88] = b"LAH\x00"
             file.write_bytes(raw)
             r = m.analyze(file)
             self.assertEqual(r["section_count"], 1)
