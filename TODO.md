@@ -9,6 +9,7 @@
 - ELM327/KWP OSS architecture and licensing audit.
 - Windows REA + Codex static-analysis runner and documented investigation tasks.
 - Read-only APK/ELF inventory scanner and synthetic regression tests.
+- Added scripts/Backup-DollarFix-Apk.ps1 to preserve the currently installed phone APK set (base.apk plus split APKs), version metadata and SHA-256 under C:\REA\Project\DollarFix\reverse\input\; phone backup has NOT yet been executed in this ChatGPT environment.
 
 ## Not yet verified
 
@@ -20,9 +21,10 @@
 
 ## Next concrete actions
 
-1. Execute scripts/Start-DollarFix-REA.ps1 locally on the original DollarFix APK and QIRUI archive.
-2. Trace Android Bluetooth -> JNI -> Launch DPU with file/method/offset evidence.
-3. Trace Delphi Data Stream selection/classification to hidden ID 76010020.
-4. Implement minimal read-only display patch after exact target hash and control flow are confirmed.
-5. Build/sign/test independently; preserve original app installation/data and maintain a rollback.
-6. Update TODO.md after every iteration.
+1. On the connected Windows PC run scripts/Backup-DollarFix-Apk.ps1 against the installed com.dnd.dollarfix.df51 package; verify successful adb pulls and hashes.
+2. Execute scripts/Start-DollarFix-REA.ps1 against the saved base.apk, optionally with QIRUI ZIP.
+3. Trace Android Bluetooth -> JNI -> Launch DPU with file/method/offset evidence.
+4. Trace Delphi Data Stream selection/classification to hidden ID 76010020.
+5. Implement minimal read-only display patch after exact target hash and control flow are confirmed.
+6. Build/sign/test independently; preserve original app installation/data and maintain a rollback.
+7. Update TODO.md after every iteration.
