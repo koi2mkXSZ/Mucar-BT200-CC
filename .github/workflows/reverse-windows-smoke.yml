@@ -5,6 +5,8 @@ on:
     paths:
       - "scripts/Analyze-DollarFix-Snapshot.ps1"
       - "scripts/Setup-DollarFix-Tools.ps1"
+      - "scripts/Backup-DollarFix-Qirui.ps1"
+      - "scripts/Export-DollarFix-Review.ps1"
       - "reverse/tools/inventory_apk.py"
       - ".github/workflows/reverse-windows-smoke.yml"
   pull_request:
@@ -29,7 +31,7 @@ jobs:
       - name: Parse PowerShell 5.1 runner and setup script syntax
         shell: pwsh
         run: |
-          $targets = @("./scripts/Analyze-DollarFix-Snapshot.ps1", "./scripts/Setup-DollarFix-Tools.ps1")
+          $targets = @("./scripts/Analyze-DollarFix-Snapshot.ps1", "./scripts/Setup-DollarFix-Tools.ps1", "./scripts/Backup-DollarFix-Qirui.ps1", "./scripts/Export-DollarFix-Review.ps1")
           foreach ($target in $targets) {
             $tokens = $null
             $errors = $null
