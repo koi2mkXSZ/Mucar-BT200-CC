@@ -57,3 +57,13 @@
 - Added reverse/tools/trace_data_stream.py + synthetic tests, creating local structured marker locations without copying proprietary source lines.
 - Added a review document summarizing exact gaps and an evidence-based plan to trace OEM/QIRUI item creation, selection and display.
 - Next: run reference locator on local smali + partial JADX and share resulting JSON/Markdown; separately capture QIRUI driver package from phone (if accessible). Do not install any patched APK until exact code-level proof and package signing plan exist.
+
+## Iteration 2026-11-22: source reference map from 111195 files
+
+- User uploaded `source-reference-map.json` and `.md` from local Apktool/JADX scan; inspected complete structured JSON and marker/method groupings.
+- 111195 text source files scanned; 14 skipped. Exact string `76010020` appears zero times among scanned text files. This is **not** proof it is absent from the device's QIRUI GGP or binary native code.
+- Candidate OEM files confirmed by lexical signatures: `com.cnlaunch.diagnosemodule.DiagnoseLogicBusiness` (`dealDataStream`, `getDataStreamCount`); `DiagnoseUIDataBusiness` (`jsonUIDataStream`, `getDefDataStreamDatraFromJson`, `jsonUIDiagnoseSpecialDatastream`); `BasicDataStreamBean` (`clearMapDataStreamID2ChoicePos`); Thinkcar `UiDataStreamManager`.
+- `PIDV.toBasicDataStreamBean` is in `com.dnd.dollarfix.elm327.bean.PIDV`; do not use ELM-based patch for OEM Chery Delphi without evidence.
+- Most GGP literal hits refer to VIN/GGP metadata, and `IdSearch` literal hits to unrelated AndroidX Compose SearchBar. Avoid false-positive reverse engineering conclusions.
+- Added `reverse/docs/TRACE_MAP_20261122.md` for evidence trail, `reverse/tools/extract_oem_trace.py` to produce bounded local-only Smali method excerpts with file and line anchors and synthetic tests. Fixed `elm327` filename classification in lexical scanner. CI passed at e718c040.
+- Next: execute targeted OEM Smali extractor and review its output; separately capture device QIRUI files to determine if `76010020` is emitted/hidden. No APK patch has been created.
