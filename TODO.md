@@ -29,3 +29,12 @@
 4. Implement minimal read-only display patch after exact target hash and control flow are confirmed.
 5. Build/sign/test independently; preserve original app installation/data and maintain a rollback.
 6. Update TODO.md after every iteration.
+
+## Iteration 2026-11-22: successful APK hashing, next RE step
+
+- Confirmed from user terminal: the four live extracted APK files exactly match their snapshot manifest sizes and SHA-256; no modifications to the originals.
+- Reviewed user's tool-status.json: all four per-split inventories exit_code 0; JADX and Apktool not found; REA Doctor exit 1 (diagnostic detail not yet available); REA providers exit 0; Codex exit 1 with `Not inside a trusted directory` because the runner invoked Codex from the non-Git parent folder.
+- Fixed Codex working directory to the tooling Git checkout and added output-only sandbox extra directories; do not bypass Git trust or disable sandbox.
+- Added opt-in pinned JADX 1.5.7 / Apktool 3.0.3 installer with official GitHub asset SHA-256 verification, and local tool discovery.
+- Added -SkipInventory to preserve previous successful inventories while still validating original APK hashes.
+- Next verification: run Windows smoke CI on new changes; then run local installer and rerun split-aware script. Inspect per-tool logs and real REA Doctor report before assigning any binary offsets or writing patches.
