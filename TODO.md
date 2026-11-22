@@ -116,3 +116,12 @@
 - Exactly three earlier edited GGP bytes redirect ID 76010019 (EGR position) pointers to the already-existing 76010020 (Mile meter) payload; original keys/index rows are unchanged. This confirms what earlier experiment changed and explains why redirection could not add a new selectable OEM menu entry.
 - Generated read-only offline Python verification script and decoded JSON/Markdown reports. No APK/driver/ECU/phone changes.
 - Persisted report reverse/docs/GGP_INDEX_DECODE_20261122.md. Next: inspect OEM menu selection emitted by vehicle-specific driver and trace to Android DiagnoseUIDataBusiness.jsonUIDataStream and numeric selection mask; do not blindly edit existing GGP pointer fields.
+
+## Iteration 2026-11-22: proved CheryDelphiII stream selection omission
+
+- Disassembled QR_InitialDelphi2 in original libCHERY_OLD.so and verified GOT relocation names via ELF64/AArch64. The function writes 18 IDs into DataStreamId and count 18 into iDataStreamItem; neither 76010019 (EGR) nor 76010020 (Mile meter) is included.
+- Verified actual chain: CheryDelphiII -> GeneralMain -> QR_InitialDelphi2; GeneralMain reads iDataStreamItem/DataStreamId, invokes AddStreamSelectBox, and routes chosen IDs to GeneralStreamCalc and AddDataStreamItem. Critical static callsites recorded in reverse/docs/DELPHI2_MENU_SELECTION_VERIFIED_20261122.md.
+- The prior GGP EGR pointer alias did not add a new selectable stream item because neither 76010019 nor 76010020 appears in this branch's 18-entry selector; this explains the ineffective change under the confirmed static branch semantics.
+- Created and executed offline build-pinned DollarFix_T11_Delphi2_menu_verify.py, extracting all 18 entries directly from ARM64 ADD/STP instructions, checking dynsym/GOT relocations and matching each selected ID to its decrypted GGP title. Saved JSON/Markdown and a ZIP with scripts and proof; no proprietary ELF/firmware committed.
+- External technical catalogues identify Chery Tiggo T11 2.4L 4G64 with Delphi MT20U / Chery diagnostic menu 2.0/2.4 4G63/4G64. Do NOT substitute earlier analyzed Delphi MT22U stream entry for this actual target. Branch CheryDelphiII is a strongly supported candidate but exact on-device navigation still needs confirmation.
+- Next blockers: confirm live DollarFix branch CheryDelphiII; inspect previously saved **read-only** Delphi normal diagnostic frame and test whether driver data positions 56..59 are populated without new ECU requests. No ELF/APK patch or ECU action until this is verified.
