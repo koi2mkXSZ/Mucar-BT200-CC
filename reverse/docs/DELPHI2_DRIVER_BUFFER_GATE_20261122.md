@@ -21,3 +21,18 @@ Source: original user-provided QIRUI V10.22 GGP and pinned `libCHERY_OLD.so` (SH
 ## Patch gate
 
 Do not deploy a modified APK or `libCHERY_OLD.so` yet. The existing 18-element selector omission is proven for a static Delphi II path, but adding a new item may affect on-wire reads and request timing. Next, correlate an already captured normal-usage diagnostic trace or offline ECU replay with the actual selected branch and the 56–59 byte mapping. Compare transport behavior before/after any proposed display-only change. Preserve originals and never write ECU mileage or bypass license checks.
+
+## Further verified native jump-table route
+
+- `OldProEnter` copies first argument `W0` to `W20` at RVA `0xE4F40`.
+- Its jump table is at `0x2C2DF8`; dispatch index is `W20 - 0xF101` and entries are signed relative 32-bit offsets.
+- `0xF119` resolves to handler `0xE5C90`, whose direct callsite `0xE5CD0` invokes `CheryDelphiII@plt`.
+- `0xF11A` resolves to handler `0xE5CEC`, whose direct callsite `0xE5D2C` invokes `CheryDelphiII@plt`.
+- Neither code is the same namespace as GGP text ID `FD050101`; mapping the user's selected screen to the handler is still an open question.
+
+## Offline-only selection candidate
+
+- Created an isolated JSON **dry run** preserving all 18 extracted original DataStreamId values and appending `76010020` as a 19th hypothetical UI item, with its already-decoded `Mile meter` / `Km` label and formula.
+- The JSON is **not an ELF or APK patch** and does not establish that new stream ID selection preserves ECU traffic, timing, or response length.
+- Revised `DollarFix_T11_Delphi2_trace_gate.py` checks 9 exact instruction sites plus the two jump-table targets; six tests pass against the pinned original ELF and synthetic fixtures.
+- The local bundle contains these source scripts, JSON evidence and this analysis; no proprietary driver or firmware binaries.
