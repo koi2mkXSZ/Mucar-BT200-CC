@@ -31,14 +31,21 @@ function Run-Tool {
     )
     $exit = -1
     $errorText = $null
+    $previousPreference = $ErrorActionPreference
     try {
-        # Capture both streams without suppressing exit codes.
+        # Windows PowerShell 5.1 can interpret stderr of Java/CLI tools as
+        # NativeCommandError under Stop even when a process is healthy.
+        # Capture both streams and judge success by the actual process exit code.
+        $ErrorActionPreference = "Continue"
         & $Executable @ToolArguments 1> $LogFile 2>&1
         $exit = $LASTEXITCODE
     }
     catch {
         $errorText = $_.Exception.Message
         [IO.File]::AppendAllText($LogFile, ([Environment]::NewLine + $errorText))
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
     }
     $result = [ordered]@{
         tool = $Name
@@ -236,8 +243,17 @@ if (-not $SkipCodex -and $codex) {
             "--add-dir", $workDir, "--add-dir", $reportDir,
             "-o", $summary, "-"
         )
-        $task | & $codex @codexArgs 2>&1 | Tee-Object -FilePath $codexLog
-        $codexExit = $LASTEXITCODE
+        # Codex may stream progress to stderr; do not promote that to an
+        # exception on Windows PowerShell 5.1. Check LASTEXITCODE instead.
+        $previousPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            $task | & $codex @codexArgs 2>&1 | Tee-Object -FilePath $codexLog
+            $codexExit = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousPreference
+        }
         $toolResults.codex = @{
             found = $true
             exit_code = $codexExit
