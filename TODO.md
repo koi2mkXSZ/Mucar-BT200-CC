@@ -97,3 +97,12 @@
 - Exactly 3 modified bytes at decimal offsets 982385 (current 7B, backup 7A), 982386 (current 76, backup E7), 3224885 (current E8, backup 74); unchanged bytes 3,420,293. Two changed 8-byte contexts appear in patterned records but format is unknown.
 - No literal `76010020` across the candidate encodings or ASCII `Mile meter`. This is a negative literal test only, not proof of absence from GGP.
 - Latest next action: privately obtain both actual 3.42 MB GGP binary files plus libCHERY_OLD.so (3.30 MB), compare hashes, reverse GGP container and ELF readers; no more blind UI patches or phone changes.
+
+## Iteration 2026-11-22: inspected actual uploaded GGP and ELF binary bytes
+
+- Inspected DollarFix-T11-GGP-20261122_124621.zip offline and verified all three SHA256 hashes: active GGP be351e..., .T11ODO.BAK ac4d52..., and libCHERY_OLD.so 74e490....
+- Both GGPs start with magic 47 47 50 00, are 3,420,296 bytes, and differ at exactly 982385, 982386, 3224885. Verified locally repeating 8-byte record patterns in both affected regions. Semantics of the record, and relationship to mileage, remain unproven.
+- ELF is AArch64 ELF64 little-endian with Build-ID 5cf17ddd4dc2fac7e798a9f6ae58f980852336cb. Direct CheryDelphiII -> GeneralMain@plt, QR_CommDelphi2 -> SendRecvKwp@plt / QR_InitialDelphi2@plt, and GeneralStreamCalc -> getdata@plt callsites verified by llvm-objdump.
+- GGP readers are exposed via callback pointers like SearchIdOpenFile, fseekGGP, GetGAGOffsetFromGGP. Need libSEARCHID.so from saved arm64 split for actual GGP parsing.
+- Added reverse/docs/T11_GGP_ELF_ANALYSIS_20261122.md and a safe pinned parser extractor reverse/tools/extract_ggp_parser_libs.py plus synthetic tests. CI passed at https://github.com/koi2mkXSZ/Mucar-BT200-CC/actions/runs/45009546877.
+- Next: inspect libSEARCHID.so and libx431file.so; link GGP record decoding to the OEM Delphi menu and 76010020. Do not modify original APK, patch GGP blindly, or send ECU writes.
