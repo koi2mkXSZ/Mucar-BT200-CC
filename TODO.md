@@ -160,3 +160,13 @@
 - Checked libx431file.so's fi_checkfile: its expected magic at byte 0 is X9LS, **not** LAUNCH. Do not mistake lsx_rec_* reader for this .dat format.
 - High-priority omitted plaintext candidate: ThinkDiag/temp/cloud_report_cache/..._QIRUI_TY.txt (2892 bytes); also FunctionMainMenu.txt (1589 bytes), dpu_downloadbin_information.txt (56 bytes), and prior-day QIRUI log (10522 bytes). User's next step: `adb pull` these files only, without ECU operations, for menu and trace context.
 - Technical summary committed to reverse/docs/PHONE_RECORDINGS_20261121_FORENSIC_REVIEW.md; locally generated downloadable Markdown/JSON in conversation. Blocker: LAUNCH data not decoded and selected Delphi route not proven at runtime. No app or car modifications.
+
+## Iteration 2026-11-22: 21-Nov real cloud report decodes and confirms Delphi II route
+
+- Fixed previous malformed nested-array PowerShell adb pull issue; user supplied `DollarFix-session-extra.zip` with exactly four intended files (cloud_report.txt, FunctionMainMenu.txt, dpu_info.txt, QIRUI_previous.dat). No recursive root filesystem read in this corrected run.
+- `cloud_report.txt` was a 2892-byte Base64 JSON string. Decoded safely offline to 2167-byte JSON with 3 report records. Redacted parser verified by 5 synthetic tests; output artifacts include a JSON and Markdown summary, plus downloadable source script.
+- **Major gate resolved:** actual diagnostic path is QIRUI_TY V10.22 > Tiggo T11 family > ECM > Delphi System 2.0L/2.4L (4G63/4G64), name_id=fd050101, system_uid=0000f11a. This matches native OldProEnter F11A jump table to CheryDelphiII, earlier only statically inferred.
+- Real saved data streams at 2026-11-21 18:51:20.879 UTC+3: 7601000F Engine speed 728 rpm; 76010013 O2 sensor 667 mV. Both IDs belong to the 18 original DataStreamId values, independently corroborating list analysis.
+- No 76010020 datum in this selected two-element report; `mileage="0"` in vehicle metadata (unit MILES) is not an ECU odometer measurement. Report is not a full 18-entry selector dump or ECU protocol trace.
+- `dpu_info.txt` has adapter downloadbin V23.04; `FunctionMainMenu.txt` only concerns reset operations; QIRUI_previous.dat is a 10522-byte LAUNCH binary log but no plaintext ECU response decoded.
+- Public repo summary saved at reverse/docs/DELPHI2_SESSION_CLOUD_REPORT_20261122.md with redacted output and no identifiers. Remaining gate: obtain a confirmed internal 60-byte driver-buffer sample or a validated trace mapping from LAUNCH log; no on-device patch or ECU write.
