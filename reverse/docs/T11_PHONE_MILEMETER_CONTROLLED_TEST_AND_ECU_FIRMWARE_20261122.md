@@ -55,3 +55,9 @@ Given Windows file (actual bytes NOT provided yet): `EC0116U9 4G64_MAFN_EURO-3-F
 Five firmware-scanner synthetic tests passed and previous nine patch tests passed (**14 total Python unit tests**). Phone PS1 was structurally checked but **could not be syntax-validated with PowerShell or executed with Android/ADB in this container**.
 
 To advance beyond the manifest, user must privately upload the **actual BIN**. Only after reading and fingerprinting its contents can we infer architecture, memory map, KWP handler, constant/default mileage field, other supported safe read-only diagnostics, and calibration/protocol compatibility. No automatic firmware update, checksum patch, ECU security access or odometer changes are in scope.
+
+## Rollback scope clarification
+
+The PowerShell runner verifies and restores the exact **external** `.../V10.22/libCHERY_OLD.so` file by SHA256. It cannot prove that a possibly separate Android app-private executable/library cache has been refreshed; a cached patched library could persist after external restoration. Thus a byte-identical external restore is **not a guarantee of full application cache rollback**. If the app still displays a 19th entry after restoring the external library and reopening, stop and inspect loader/cache behavior; do not root or uninstall the app to force it.
+
+User-side run is still pending. The latest private ZIP explicitly documents this caveat.
