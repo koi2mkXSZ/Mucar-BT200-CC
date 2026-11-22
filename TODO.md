@@ -38,3 +38,13 @@
 - Added opt-in pinned JADX 1.5.7 / Apktool 3.0.3 installer with official GitHub asset SHA-256 verification, and local tool discovery.
 - Added -SkipInventory to preserve previous successful inventories while still validating original APK hashes.
 - Next verification: run Windows smoke CI on new changes; then run local installer and rerun split-aware script. Inspect per-tool logs and real REA Doctor report before assigning any binary offsets or writing patches.
+
+## Iteration 2026-11-22: Codex/REA result review (user-provided reports)
+
+- New tool-status confirms installed snapshot SHA-256 verification; Apktool base and all three splits exited 0; Codex exited 0 and generated four local authored documents.
+- REA Doctor still reports healthy=false because optional Ghidra, native JADX MCP plugin, IDA, Hopper etc. are absent; the provider catalog and Codex summary confirm some Android static analysis calls were available/succeeded. Do NOT equate Doctor nonzero with global REA failure.
+- JADX v1.5.7 CLI exited 3. No JADX error details have yet been provided: inspect reverse/reports/DollarFix-installed-20261122_112739/jadx-base.log before diagnosing.
+- Codex summary reports candidate UI path PIDV -> PIDV.toBasicDataStreamBean() -> BasicDataStreamBean.id -> Data Stream UI and a read-only hook on ID 76010020. Detailed markdown reports have NOT yet been independently reviewed here; no code or binary patch is confirmed.
+- Codex reports no libCHERY_OLD.so in arm64 APK split and QIRUI ZIP absent. This does not exclude a native driver in the separately downloaded QIRUI_TY diagnostic package.
+- Added scripts/Backup-DollarFix-Qirui.ps1 (read-only ADB download of QIRUI_TY V10.22 from DollarFix external storage), updated Codex task for real split snapshots, and scripts/Export-DollarFix-Review.ps1 to package the four local markdown reports plus last 200 JADX log lines for private review.
+- Next: review actual authored reports and JADX error excerpt; optionally retrieve QIRUI package from phone. Confirm exact class/method/line or smali signatures before any minimal read-only UI patch. No APK was modified, signed, executed or installed.
