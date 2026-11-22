@@ -48,3 +48,12 @@
 - Codex reports no libCHERY_OLD.so in arm64 APK split and QIRUI ZIP absent. This does not exclude a native driver in the separately downloaded QIRUI_TY diagnostic package.
 - Added scripts/Backup-DollarFix-Qirui.ps1 (read-only ADB download of QIRUI_TY V10.22 from DollarFix external storage), updated Codex task for real split snapshots, and scripts/Export-DollarFix-Review.ps1 to package the four local markdown reports plus last 200 JADX log lines for private review.
 - Next: review actual authored reports and JADX error excerpt; optionally retrieve QIRUI package from phone. Confirm exact class/method/line or smali signatures before any minimal read-only UI patch. No APK was modified, signed, executed or installed.
+
+## Iteration 2026-11-22: full review ZIP analyzed
+
+- Read user-uploaded DollarFix-review-20261122_121155.zip (4 technical reports, TODO, tool-status, last 200 JADX lines), not merely its filenames. Findings documented in reverse/docs/REVIEW_20261122.md.
+- Codex documented installed version 1.9.4 (code 1940), native libSearchId, libSocket and JniX431File, and candidate PIDV.toBasicDataStreamBean(). The only observed selected-PID flow goes through ELMDataViewUtil/DataStreamScene, **not established as a proprietary Delphi UI path**. Do NOT patch BasicDataStreamBean based solely on this.
+- JADX progress reached 99% of 27,411 classes but printed 443 aggregate errors. Individual failure details are missing from supplied tail, so root cause is not yet established; exploit available Apktool smali/REA evidence rather than blindly treating the whole codebase as decompiled.
+- Added reverse/tools/trace_data_stream.py + synthetic tests, creating local structured marker locations without copying proprietary source lines.
+- Added a review document summarizing exact gaps and an evidence-based plan to trace OEM/QIRUI item creation, selection and display.
+- Next: run reference locator on local smali + partial JADX and share resulting JSON/Markdown; separately capture QIRUI driver package from phone (if accessible). Do not install any patched APK until exact code-level proof and package signing plan exist.
