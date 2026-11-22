@@ -9,12 +9,13 @@
 - ELM327/KWP OSS architecture and licensing audit.
 - Windows REA + Codex static-analysis runner and documented investigation tasks.
 - Read-only APK/ELF inventory scanner and synthetic regression tests.
-- Исправлена ошибка поиска adb.exe в скрипте резервного копирования: дополнительные пути и установка официальных Google Platform-Tools по явному ключу -InstallAdb; резервное копирование на телефоне ещё не подтверждено.
-- Added scripts/Backup-DollarFix-Apk.ps1 to preserve the currently installed phone APK set (base.apk plus split APKs), version metadata and SHA-256 under C:\REA\Project\DollarFix\reverse\input\; phone backup has NOT yet been executed in this ChatGPT environment.
+- Исправлен поиск adb.exe и добавлена установка официальных Google Platform-Tools по явному ключу -InstallAdb.
+- User confirmed successful read-only ADB snapshot of four installed APKs (base + arm64-v8a + ru + xxhdpi) on 2026-11-22, with file sizes and SHA-256; see reverse/docs/INSTALLED_SNAPSHOT_20261122.md. This is a report of local execution, not a remotely rerun independent check.
+- Added scripts/Analyze-DollarFix-Snapshot.ps1 to verify original four-file set against manifest and inventory each split separately, then run available JADX/Apktool/REA/Codex. Synthetic Windows CI passed: https://github.com/koi2mkXSZ/Mucar-BT200-CC/actions/runs/45003093353
 
 ## Not yet verified
 
-- APK source bytes: the historic upload's metadata was found, but this session could not download original bytes.
+- Original current installed APK bytes are preserved locally on the user's Windows computer; this ChatGPT runtime has only user-reported hashes/paths, not the actual binary contents.
 - Real REA/Codex execution against DollarFix: local agents are not remotely exposed in this ChatGPT session.
 - Bluetooth Classic/BLE choice, UUID, BT200 DPU framing and JNI call path.
 - Delphi visible PID selection mechanism.
@@ -22,10 +23,9 @@
 
 ## Next concrete actions
 
-1. On the connected Windows PC run scripts/Backup-DollarFix-Apk.ps1 against the installed com.dnd.dollarfix.df51 package; verify successful adb pulls and hashes.
-2. Execute scripts/Start-DollarFix-REA.ps1 against the saved base.apk, optionally with QIRUI ZIP.
-3. Trace Android Bluetooth -> JNI -> Launch DPU with file/method/offset evidence.
-4. Trace Delphi Data Stream selection/classification to hidden ID 76010020.
-5. Implement minimal read-only display patch after exact target hash and control flow are confirmed.
-6. Build/sign/test independently; preserve original app installation/data and maintain a rollback.
-7. Update TODO.md after every iteration.
+1. Run scripts/Analyze-DollarFix-Snapshot.ps1 on the saved four APKs and capture tool-status.json / per-split inventory; add optional QIRUI ZIP if available.
+2. Trace Android Bluetooth -> JNI -> Launch DPU with file/method/offset evidence.
+3. Trace Delphi Data Stream selection/classification to hidden ID 76010020.
+4. Implement minimal read-only display patch after exact target hash and control flow are confirmed.
+5. Build/sign/test independently; preserve original app installation/data and maintain a rollback.
+6. Update TODO.md after every iteration.
