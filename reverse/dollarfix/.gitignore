@@ -1,0 +1,17 @@
+# Keep reverse-engineering samples, modified apps, and sensitive metadata LOCAL.
+private/
+output/
+work/
+evidence/
+*.apk
+*.aab
+*.apks
+*.zip
+*.so
+*.dex
+*.ggp
+*.GGP
+*.dat
+*.keystore
+*.jks
+__pycache__/
