@@ -67,3 +67,16 @@
 - Most GGP literal hits refer to VIN/GGP metadata, and `IdSearch` literal hits to unrelated AndroidX Compose SearchBar. Avoid false-positive reverse engineering conclusions.
 - Added `reverse/docs/TRACE_MAP_20261122.md` for evidence trail, `reverse/tools/extract_oem_trace.py` to produce bounded local-only Smali method excerpts with file and line anchors and synthetic tests. Fixed `elm327` filename classification in lexical scanner. CI passed at e718c040.
 - Next: execute targeted OEM Smali extractor and review its output; separately capture device QIRUI files to determine if `76010020` is emitted/hidden. No APK patch has been created.
+
+
+## Iteration 2026-11-22: OEM Smali deep review
+
+- Reviewed local user upload oem-smali-evidence.json and .md (7 Smali files, 55 matched methods; target files all present).
+- Confirmed concrete OEM callsites in DiagnoseUIDataBusiness.jsonUIDataStream: menudata array -> JSONObject -> BasicDataStreamBean(JSONObject) -> ArrayList.add, and conditional addDataStreamBeanInfo.
+- Confirmed BasicDataStreamBean.Id is an optional **string** JSON field, while Const_Text_Item and SN are **integer** item numbers; getArrDefaultSelected stores integer selections.
+- Confirmed the OEM selection pathway includes getShowIndexDataStream()[I for message type 801 and pageStreamFeedbackMask/getDatastreamMask; no direct 76010020-specific filter in available limited snippets.
+- UI layer includes conversion in UiDataStreamManager and list data/observer handling in DataStreamManager. Still no causal evidence of a lost odometer item.
+- Added reverse/docs/OEM_SMALI_REVIEW_20261122.md with exact Smali line references.
+- Added reverse/tools/probe_qirui.py and synthetic reverse/tests/test_probe_qirui.py; GitHub Actions run 45007701740 passed. Tool only inventories and probes downloaded QIRUI binary package locally.
+- Blocker: no QIRUI_TY V10.22 diagnostic-driver bytes or real-world OEM menudata JSON capture attached. Do not infer runtime Id == GGP key 76010020, nor claim ability to patch yet.
+- Next: read-only QIRUI backup / binary probe. Compare actual OEM JSON Id/Item/SN, then locate an evidence-supported display-only change. Preserve installed original and never send ECU write commands.
