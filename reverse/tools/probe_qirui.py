@@ -81,6 +81,10 @@ def probe(root: Path) -> dict:
             skipped_symlinks += 1
             continue
         if path.is_file():
+            # Created by the local ADB-backup tool; it is NOT an on-device
+            # diagnostic asset and otherwise produces false CHERY_OLD hits.
+            if path.name == "qirui-manifest.json":
+                continue
             entries.append(path)
             if len(entries) > MAX_FILES:
                 raise ValueError("Too many files; narrow --root to QIRUI_TY/V10.22")
