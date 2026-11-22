@@ -4,12 +4,12 @@ Goal: investigate the user's original DollarFix APK and prepare a minimal read-o
 
 ## Inputs (local, not committed)
 
-- reverse/input/DollarFix-original.apk
-- reverse/input/DollarFix_QIRUI_FULL.zip (optional)
-- reverse/reports/inventory.json
-- reverse/work/jadx/ (JADX decompilation, if installed)
-- reverse/work/apktool/ (Apktool extraction, if installed)
-- reverse/reports/rea-doctor.json and rea-providers.json
+- PRIMARY original snapshot: `C:\REA\Project\DollarFix\reverse\input\DollarFix-installed-20261122_112739\` (base.apk + three split APKs; preserve all four byte-for-byte).
+- Snapshot manifest and SHA-256 verification are in the corresponding snapshot directory and reports subdirectory.
+- The obsolete legacy path `reverse/input/DollarFix-original.apk` is NOT REQUIRED. Do not call the original APK absent merely because that legacy path is missing.
+- Optional: QIRUI_TY V10.22 from the phone's DollarFix external data, to be copied via `scripts/Backup-DollarFix-Qirui.ps1` if still present. It is not expected inside `split_config.arm64_v8a.apk`.
+- `C:\REA\Project\DollarFix\reverse\work\DollarFix-installed-20261122_112739\`: JADX/Apktool/native output.
+- `C:\REA\Project\DollarFix\reverse\reports\DollarFix-installed-20261122_112739\`: REA evidence, per-tool logs, snapshot verification.
 
 If any tool/input is missing, record the limitation; never invent class names, addresses, BLE UUIDs, native function behavior or a completed patch.
 
@@ -28,6 +28,16 @@ Use Apktool to map diagnostic menus, Delphi Data Stream item selection, localiza
 ## Phase D — native
 
 Inventory JNI exports/imports and ELF architectures. Use REA MCP/Ghidra when supported to link Android to native transport and QIRUI libCHERY_OLD.so, libSEARCHID.so. Verify exact binary SHA and offsets. Do not claim provider execution unless evidence exists.
+
+## Current evidence versus verification gaps
+
+- A previous Codex summary reports the apparent UI path `PIDV` selection → `PIDV.toBasicDataStreamBean()` → `BasicDataStreamBean.id` → data-stream UI.
+- That summary proposes matching identifier `76010020` for the read-only odometer display.
+- Treat these as **hypotheses pending exact file/method evidence** from the authored reports, disassembly and APK bytes.
+- The current saved base APK SHA-256 is `139ba36fb5a0d12f53494bfefdf1a7224ebb864d07d97b91a1d2aee8f6cccb23`. Always verify local actual input against manifest before any patch.
+- JADX finished with exit code 3 in one investigation. Read the specific `jadx-base.log` first. Apktool succeeded for all four installed files, and some REA static calls succeeded even though `rea doctor` reports optional engines missing.
+- `libCHERY_OLD.so` was not found in the installed ARM64 split; do not infer absence from the dynamically downloaded QIRUI package.
+- None of the four authored detailed reports are available in the remote GitHub repository until separately reviewed and pushed by the local user or explicitly uploaded; do not invent evidence from report filenames.
 
 ## Phase E — GGP
 
@@ -48,5 +58,5 @@ Prepare the smallest demonstrably effective read-only patch and exact target SHA
 
 ## REA and Codex
 
-Use available MCP tool schemas dynamically, confirm which providers actually respond, and cite REA evidence IDs in local reports if present.
+Use available MCP tool schemas dynamically, confirm which providers actually respond, and cite REA evidence IDs in local reports if present. Collect the concrete JADX/Apktool evidence showing the full PIDV selection path and determine whether the actual id type is string/int before suggesting a smali hook.
 Never infer tool success merely because an MCP config file exists. Record failures. Keep repository commits free of secrets and proprietary code.
