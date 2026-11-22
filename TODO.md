@@ -80,3 +80,12 @@
 - Added reverse/tools/probe_qirui.py and synthetic reverse/tests/test_probe_qirui.py; GitHub Actions run 45007701740 passed. Tool only inventories and probes downloaded QIRUI binary package locally.
 - Blocker: no QIRUI_TY V10.22 diagnostic-driver bytes or real-world OEM menudata JSON capture attached. Do not infer runtime Id == GGP key 76010020, nor claim ability to patch yet.
 - Next: read-only QIRUI backup / binary probe. Compare actual OEM JSON Id/Item/SN, then locate an evidence-supported display-only change. Preserve installed original and never send ECU write commands.
+
+## Iteration 2026-11-22: captured QIRUI and binary probe review
+
+- User successfully read-only pulled QIRUI_TY V10.22 from Android with 79 files / 38,502,050 bytes; latest capture location is reverse/input/QIRUI-installed-20261122_123943.
+- Received qirui-probe.json/md. They refer to an earlier capture ending _121203; scanned 80 files because the generated 20,309-byte qirui-manifest.json was included. Fixed reverse/tools/probe_qirui.py to skip that locally created metadata. Real diagnostic assets remain 79 files.
+- Confirmed filenames and hashes: libCHERY_OLD.so and CHERY_OLD_RU.GGP present in on-device driver (not arm64 APK split). Second CHERY_OLD_RU.GGP.T11ODO.BAK has same length but different SHA256; there is NO proof which version is factory original.
+- A simple literal scan of both GGP versions did NOT find 76010020 or Mile meter in tested byte encodings. Does not prove absence from decoded/indexed or compressed data.
+- Added reverse/docs/QIRUI_PROBE_REVIEW_20261122.md and reverse/tools/compare_chery_ggp.py + synthetic tests to locate byte regions changed by earlier T11ODO experiment. Tool is local read-only, reports bounded offsets and previews.
+- Next: run comparison on latest local capture; correlate changed offsets with GGP record format and Delphi driver's static code. Still no proven OEM menudata route for 76010020. Do not alter installed app or any ECU values.
