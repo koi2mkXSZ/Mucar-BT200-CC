@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "scripts/Analyze-DollarFix-Snapshot.ps1"
+      - "scripts/Setup-DollarFix-Tools.ps1"
       - "reverse/tools/inventory_apk.py"
       - ".github/workflows/reverse-windows-smoke.yml"
   pull_request:
@@ -25,6 +26,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Parse PowerShell 5.1 runner and setup script syntax
+        shell: pwsh
+        run: |
+          $targets = @("./scripts/Analyze-DollarFix-Snapshot.ps1", "./scripts/Setup-DollarFix-Tools.ps1")
+          foreach ($target in $targets) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+                (Resolve-Path $target).Path, [ref]$tokens, [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -ne 0) {
+              $errors | Format-Table | Out-String | Write-Error
+              throw "PowerShell syntax errors in $target"
+            }
+          }
       - name: Generate synthetic installed APK set and backup manifest
         shell: pwsh
         run: |
@@ -60,6 +76,14 @@ jobs:
           $report = Join-Path $env:PROJECT_ROOT "reverse\reports\DollarFix-installed-test\snapshot-verification.json"
           $verification = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
           if (-not $verification.verified_sha256 -or $verification.verified_apk_count -ne 4) { throw "Snapshot validation did not pass" }
+      - name: Verify repeat analysis skips inventory but still validates all hashes
+        shell: pwsh
+        run: |
+          ./scripts/Analyze-DollarFix-Snapshot.ps1 -ProjectRoot "$env:PROJECT_ROOT" -SnapshotDirectory "$env:SNAPSHOT_ROOT" -SkipInventory -SkipJadx -SkipApktool -SkipCodex
+          $statusPath = Join-Path $env:PROJECT_ROOT "reverse\reports\DollarFix-installed-test\tool-status.json"
+          $status = Get-Content -LiteralPath $statusPath -Raw | ConvertFrom-Json
+          if (-not $status.inventory.skipped) { throw "SkipInventory behavior failed" }
+
       - name: Never upload app binaries or local reports
         shell: pwsh
         run: |
