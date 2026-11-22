@@ -10,6 +10,8 @@
 
 QIRUI ZIP необязателен. Флаг -SkipCodex пропускает Codex. Если локальные сценарии заблокированы, без изменения системной политики:
 
+Если `adb.exe` не найден, скрипт можно запустить с флагом `-InstallAdb`. Тогда он загрузит официальный Android Platform-Tools ZIP с Google в `C:\REA\Project\DollarFix\tools\android\`, не меняя системный PATH и не требуя прав администратора. При наличии существующего ADB можно указать `-AdbPath`.
+
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-DollarFix-REA.ps1 -ApkPath "C:\Path\To\DollarFix.apk"
 
 ## Что выполняется
