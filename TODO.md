@@ -9,6 +9,7 @@
 - ELM327/KWP OSS architecture and licensing audit.
 - Windows REA + Codex static-analysis runner and documented investigation tasks.
 - Read-only APK/ELF inventory scanner and synthetic regression tests.
+- Исправлена ошибка поиска adb.exe в скрипте резервного копирования: дополнительные пути и установка официальных Google Platform-Tools по явному ключу -InstallAdb; резервное копирование на телефоне ещё не подтверждено.
 - Added scripts/Backup-DollarFix-Apk.ps1 to preserve the currently installed phone APK set (base.apk plus split APKs), version metadata and SHA-256 under C:\REA\Project\DollarFix\reverse\input\; phone backup has NOT yet been executed in this ChatGPT environment.
 
 ## Not yet verified
