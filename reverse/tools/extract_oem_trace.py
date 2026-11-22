@@ -60,7 +60,11 @@ def file_hash(path: Path) -> str:
 
 
 def select_method(signature: str, needles: tuple[str, ...]) -> bool:
-    return any(name.lower() in signature.lower() for name in needles)
+    # Match only the declared method name. A match in Android parameter types
+    # (e.g. android/...) is not a match for a method named getId().
+    declaration = signature.split("(", 1)[0]
+    method_name = declaration.split()[-1] if declaration.split() else ""
+    return any(name.lower() in method_name.lower() for name in needles)
 
 
 def extract_smali(path: Path, needles: tuple[str, ...]) -> list[dict]:
@@ -124,9 +128,17 @@ def collect(apktool_dir: Path) -> dict:
             output["missing_targets"].append(relative_name)
             continue
         methods = extract_smali(path, needles)
+        fields = []
+        for num, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            trimmed = line.strip()
+            if not trimmed.startswith(".field "):
+                continue
+            if any(token in trimmed.lower() for token in ("id:", "choice", "select", "data", "name", "value", "show", "visible")):
+                fields.append({"line": num, "declaration": trimmed[:400]})
         output["files"].append({
             "relative_path": relative_name,
             "sha256": file_hash(path),
+            "fields": fields[:100],
             "matched_methods": methods,
         })
         output["total_methods"] += len(methods)
@@ -154,6 +166,10 @@ def markdown(data: dict) -> str:
     for file in data["files"]:
         result += [f"## {tick}{file['relative_path']}{tick}", "",
                    f"SHA-256 (decompiled Smali): {tick}{file['sha256']}{tick}", ""]
+        if file["fields"]:
+            result += ["### Relevant field declarations", ""]
+            result += [f"- L{x['line']}: {tick}{x['declaration']}{tick}" for x in file["fields"]]
+            result += [""]
         for method in file["matched_methods"]:
             result += [
                 f"### {tick}{method['signature']}{tick}",
