@@ -13,9 +13,10 @@
 - [x] Reviewed available REA tool documentation and previous validated local REA/Codex toolchain report.
 - [x] Located historical APK/QIRUI attachment metadata but the file backing bytes were not available to this session for analysis.
 - [x] Added a reproducible, strictly read-only RE workbench, artifact inventory, GGP structural checker, archive diff, unit tests, and Codex instructions.
+- [x] Synthetic CI: **PASS**, GitHub Actions run 45001473523 on merged commit b50ba4ac79ec043259ec8fef24171601cb9e08e5 (three unit tests).
 
 ### Pending / blockers
-- [ ] Obtain byte-accessible source APK and V10.22 GGP/ELF into ignored local `private/` directory (historical archive metadata alone is insufficient).
+- [ ] Obtain byte-accessible source APK (also possible through authorized REA ADB pull from an installed DollarFix package) and V10.22 GGP/ELF into ignored local `private/` directory (historical archive metadata alone is insufficient).
 - [ ] Run actual REA `inspect_android_package` and record source SHA-256, package/manifest, DEX, JNI and signature evidence.
 - [ ] Map Android Bluetooth UI/service/JNI to BT200 DPU (DPU transaction envelopes `SEQ 27 01` / `SEQ 67 01` seen previously).
 - [ ] Trace Delphi Data Stream membership: `AddDataStreamItem`, `AddDataStreamClassificationSDefDSID`, `GeneralMain`, `XDSDATA.GAG`, system ID `0x80fc`.
