@@ -89,3 +89,11 @@
 - A simple literal scan of both GGP versions did NOT find 76010020 or Mile meter in tested byte encodings. Does not prove absence from decoded/indexed or compressed data.
 - Added reverse/docs/QIRUI_PROBE_REVIEW_20261122.md and reverse/tools/compare_chery_ggp.py + synthetic tests to locate byte regions changed by earlier T11ODO experiment. Tool is local read-only, reports bounded offsets and previews.
 - Next: run comparison on latest local capture; correlate changed offsets with GGP record format and Delphi driver's static code. Still no proven OEM menudata route for 76010020. Do not alter installed app or any ECU values.
+
+## Iteration 2026-11-22: exact QIRUI GGP diff reviewed
+
+- Reviewed user-uploaded ggp-diff.json and .md referring to latest QIRUI-installed-20261122_123943 backup.
+- Both CHERY_OLD_RU.GGP and CHERY_OLD_RU.GGP.T11ODO.BAK are 3,420,296 bytes; SHA256 differ as documented in reverse/docs/GGP_DIFF_REVIEW_20261122.md.
+- Exactly 3 modified bytes at decimal offsets 982385 (current 7B, backup 7A), 982386 (current 76, backup E7), 3224885 (current E8, backup 74); unchanged bytes 3,420,293. Two changed 8-byte contexts appear in patterned records but format is unknown.
+- No literal `76010020` across the candidate encodings or ASCII `Mile meter`. This is a negative literal test only, not proof of absence from GGP.
+- Latest next action: privately obtain both actual 3.42 MB GGP binary files plus libCHERY_OLD.so (3.30 MB), compare hashes, reverse GGP container and ELF readers; no more blind UI patches or phone changes.
