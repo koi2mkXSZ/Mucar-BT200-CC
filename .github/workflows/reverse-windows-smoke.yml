@@ -1,0 +1,66 @@
+name: DollarFix split-APK REA runner smoke test
+
+on:
+  push:
+    paths:
+      - "scripts/Analyze-DollarFix-Snapshot.ps1"
+      - "reverse/tools/inventory_apk.py"
+      - ".github/workflows/reverse-windows-smoke.yml"
+  pull_request:
+    paths:
+      - "scripts/Analyze-DollarFix-Snapshot.ps1"
+      - "reverse/tools/inventory_apk.py"
+      - ".github/workflows/reverse-windows-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate synthetic installed APK set and backup manifest
+        shell: pwsh
+        run: |
+          $project = Join-Path $env:RUNNER_TEMP "DollarFixTest"
+          $snapshot = Join-Path $project "reverse\input\DollarFix-installed-test"
+          New-Item -ItemType Directory -Path $snapshot -Force | Out-Null
+          @'
+          import sys, zipfile, pathlib
+          root = pathlib.Path(sys.argv[1])
+          for name in ["base.apk", "split_config.arm64_v8a.apk", "split_config.ru.apk", "split_config.xxhdpi.apk"]:
+              with zipfile.ZipFile(root / name, "w") as apk:
+                  apk.writestr("AndroidManifest.xml", b"sample")
+                  apk.writestr("classes.dex", b"dex\nBluetoothSocket")
+          '@ | python - $snapshot
+          $files = @(Get-ChildItem -LiteralPath $snapshot -Filter "*.apk" | ForEach-Object {
+            [ordered]@{
+              local_filename = $_.Name
+              size_bytes = $_.Length
+              sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            }
+          })
+          [ordered]@{
+            apk_count = $files.Count
+            android_package = "com.dnd.dollarfix.df51"
+            apk_files = $files
+          } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $snapshot "manifest.json") -Encoding UTF8
+          "PROJECT_ROOT=$project" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "SNAPSHOT_ROOT=$snapshot" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Validate and inventory four synthetic APKs
+        shell: pwsh
+        run: |
+          ./scripts/Analyze-DollarFix-Snapshot.ps1 -ProjectRoot "$env:PROJECT_ROOT" -SnapshotDirectory "$env:SNAPSHOT_ROOT" -SkipJadx -SkipApktool -SkipCodex
+          $report = Join-Path $env:PROJECT_ROOT "reverse\reports\DollarFix-installed-test\snapshot-verification.json"
+          $verification = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
+          if (-not $verification.verified_sha256 -or $verification.verified_apk_count -ne 4) { throw "Snapshot validation did not pass" }
+      - name: Never upload app binaries or local reports
+        shell: pwsh
+        run: |
+          git status --short
