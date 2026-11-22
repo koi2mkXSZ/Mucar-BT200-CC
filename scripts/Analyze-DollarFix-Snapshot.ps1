@@ -8,7 +8,8 @@ param(
     [string]$QiruiZipPath = "",
     [switch]$SkipJadx,
     [switch]$SkipApktool,
-    [switch]$SkipCodex
+    [switch]$SkipCodex,
+    [switch]$SkipInventory
 )
 $ErrorActionPreference = "Stop"
 
@@ -133,6 +134,7 @@ if (-not $python) { throw "Python 3 not found. Install Python to run the local r
 $pythonPrefix = @()
 if ([IO.Path]::GetFileNameWithoutExtension($python) -eq "py") { $pythonPrefix = @("-3") }
 
+if (-not $SkipInventory) {
 foreach ($file in $verifiedFiles) {
     $shortname = [IO.Path]::GetFileNameWithoutExtension($file.name)
     $inventoryOutput = Join-Path $reportDir ("inventory-" + $shortname + ".json")
@@ -148,6 +150,10 @@ foreach ($file in $verifiedFiles) {
         throw "Inventory failed for $($file.name), see $($result.log)"
     }
 }
+} else {
+    Write-Host "Skipping repeat inventory (existing reports preserved)."
+    $toolResults.inventory = @{ skipped = $true; reason = "SkipInventory" }
+}
 
 if ($QiruiZipPath) {
     $qirui = (Resolve-Path -LiteralPath $QiruiZipPath).Path
@@ -160,6 +166,10 @@ if ($QiruiZipPath) {
 }
 
 $jadx = Find-Tool @("jadx.bat","jadx.exe","jadx")
+if (-not $jadx) {
+    $localJadx = Join-Path $root "tools\reverse\jadx\bin\jadx.bat"
+    if (Test-Path -LiteralPath $localJadx -PathType Leaf) { $jadx = $localJadx }
+}
 if ($jadx -and -not $SkipJadx) {
     $toolResults.jadx = Run-Tool "jadx-base" $jadx @(
         "--no-res", "-j", "4", "-d", (Join-Path $workDir "jadx-base"), $baseApk
@@ -168,6 +178,10 @@ if ($jadx -and -not $SkipJadx) {
 else { $toolResults.jadx = @{ found = $false; skipped = [bool]$SkipJadx } }
 
 $apktool = Find-Tool @("apktool.bat","apktool.exe","apktool")
+if (-not $apktool) {
+    $localApktool = Join-Path $root "tools\reverse\apktool\apktool.bat"
+    if (Test-Path -LiteralPath $localApktool -PathType Leaf) { $apktool = $localApktool }
+}
 if ($apktool -and -not $SkipApktool) {
     foreach ($file in $verifiedFiles) {
         $shortname = [IO.Path]::GetFileNameWithoutExtension($file.name)
@@ -207,13 +221,37 @@ if (-not $SkipCodex -and $codex) {
     $task += "Do not claim REA tool activity unless an actual MCP call succeeded."
     $task += [Environment]::NewLine
     $task += "Create a redacted report in $reportDir and do not upload proprietary bytes or secrets."
-    Push-Location $root
+    # Codex requires a Git worktree: run in the checked-out tooling repository,
+    # not in the user's parent C:\REA\Project\DollarFix folder.
+    $gitFolder = Join-Path $scriptRoot ".git"
+    if (-not (Test-Path -LiteralPath $gitFolder)) {
+        throw "Codex workdir is not a Git checkout: $scriptRoot. Clone research-tooling first."
+    }
+    $codexLog = Join-Path $reportDir "codex-exec.log"
+    Push-Location $scriptRoot
     try {
-        $task | & $codex exec -C $root -o $summary -
-        $toolResults.codex = @{ found = $true; exit_code = $LASTEXITCODE; summary = $summary }
+        # Allow write access to outputs only, NOT the preserved original APK snapshot.
+        $codexArgs = @(
+            "exec", "-C", $scriptRoot, "--sandbox", "workspace-write",
+            "--add-dir", $workDir, "--add-dir", $reportDir,
+            "-o", $summary, "-"
+        )
+        $task | & $codex @codexArgs 2>&1 | Tee-Object -FilePath $codexLog
+        $codexExit = $LASTEXITCODE
+        $toolResults.codex = @{
+            found = $true
+            exit_code = $codexExit
+            summary = $summary
+            log = $codexLog
+            working_directory = $scriptRoot
+        }
+        if ($codexExit -ne 0) {
+            Write-Warning "Codex returned exit code $codexExit; see $codexLog"
+        }
     }
     catch {
-        $toolResults.codex = @{ found = $true; exit_code = -1; error = $_.Exception.Message }
+        $toolResults.codex = @{ found = $true; exit_code = -1; error = $_.Exception.Message; log = $codexLog }
+        Write-Warning "Codex failed: $($_.Exception.Message)"
     }
     finally { Pop-Location }
 }
