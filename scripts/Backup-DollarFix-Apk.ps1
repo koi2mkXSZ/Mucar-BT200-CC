@@ -5,26 +5,75 @@
 param(
     [string]$ProjectRoot = "C:\REA\Project\DollarFix",
     [string]$Package = "com.dnd.dollarfix.df51",
-    [string]$DeviceSerial = ""
+    [string]$DeviceSerial = "",
+    [string]$AdbPath = "",
+    [switch]$InstallAdb
 )
 
 $ErrorActionPreference = "Stop"
-$adbCommand = Get-Command adb.exe -ErrorAction SilentlyContinue
-$adb = if ($adbCommand) { $adbCommand.Source } else { $null }
+
+# Search current PATH plus common local development locations.
+$adb = $null
+if ($AdbPath) {
+    if (-not (Test-Path -LiteralPath $AdbPath -PathType Leaf)) {
+        throw "Specified -AdbPath does not exist: $AdbPath"
+    }
+    $adb = (Resolve-Path -LiteralPath $AdbPath).Path
+} else {
+    $adbCommand = Get-Command adb.exe -ErrorAction SilentlyContinue
+    if ($adbCommand) { $adb = $adbCommand.Source }
+}
+
 if (-not $adb) {
-    foreach ($candidate in @(
+    $possible = @(
+        (Join-Path $ProjectRoot "tools\android\platform-tools\adb.exe"),
+        (Join-Path $ProjectRoot "platform-tools\adb.exe"),
+        (Join-Path $ProjectRoot "tools\platform-tools\adb.exe"),
         (Join-Path $env:LOCALAPPDATA "Android\Sdk\platform-tools\adb.exe"),
+        "C:\REA\platform-tools\adb.exe",
+        "C:\REA\Tools\platform-tools\adb.exe",
+        "C:\Tools\platform-tools\adb.exe",
         "C:\platform-tools\adb.exe"
-    )) {
+    )
+    foreach ($candidate in $possible) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
             $adb = $candidate
             break
         }
     }
 }
-if (-not $adb) {
-    throw "adb.exe not found. Add Android platform-tools to PATH or install them."
+
+# Explicit opt-in download; no elevation or system-wide PATH mutation.
+if (-not $adb -and $InstallAdb) {
+    $sdkRoot = Join-Path $ProjectRoot "tools\android"
+    $archive = Join-Path $sdkRoot "platform-tools-latest-windows.zip"
+    $officialUrl = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+    New-Item -ItemType Directory -Path $sdkRoot -Force | Out-Null
+    Write-Host "ADB was not found. Downloading official Google Android Platform-Tools ..."
+    Write-Host "Source: $officialUrl"
+    try {
+        [Net.ServicePointManager]::SecurityProtocol =
+            [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $officialUrl -OutFile $archive -UseBasicParsing
+        if (-not (Test-Path -LiteralPath $archive -PathType Leaf)) {
+            throw "Platform-Tools archive was not downloaded"
+        }
+        Write-Host ("Download SHA256: " + (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash)
+        Expand-Archive -LiteralPath $archive -DestinationPath $sdkRoot -Force
+        $candidate = Join-Path $sdkRoot "platform-tools\adb.exe"
+        if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+            throw "Official archive does not contain expected platform-tools/adb.exe"
+        }
+        $adb = $candidate
+    } catch {
+        throw "Failed to download/extract Android Platform-Tools from Google: $($_.Exception.Message)"
+    }
 }
+
+if (-not $adb) {
+    throw "adb.exe not found. Re-run this script with -InstallAdb to download official Google Platform-Tools locally, or supply -AdbPath."
+}
+Write-Host "ADB: $adb"
 
 $deviceLines = @(& $adb devices -l)
 if ($LASTEXITCODE -ne 0) { throw "adb devices failed" }
