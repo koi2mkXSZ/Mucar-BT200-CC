@@ -1,0 +1,17 @@
+# Local-only proprietary evidence
+input/
+work/
+output/
+reports/
+*.apk
+*.apks
+*.aab
+*.dex
+*.so
+*.ggp
+*.dat
+*.jks
+*.keystore
+*.pem
+*.key
+*.log
